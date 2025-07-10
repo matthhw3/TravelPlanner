@@ -24,7 +24,26 @@
     .title {
       font-size: 24px;
       font-weight: bold;
+      color: #333;
+      text-decoration: none;
     }
+
+    .plan {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #ff7e5f; /* orange color from your theme */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none; /* remove underline */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+
 
     .user-badge {
       background-color: #007BFF;
@@ -141,13 +160,13 @@
 
   <!-- Header -->
   <header>
-    <div class="title">TravelPlanner</div>
-    <div class="user-badge">MW</div>
+    <a href="/dashboard" class="title">TravelPlanner</a>
+    <div class="user-badge">{{ initials }}</div>
   </header>
 
   <!-- Navigation Tabs -->
   <div class="nav-bar">
-    <div><i class="fas fa-plus-circle"></i> Create</div>
+    <div><a href= "/plan" class="plan"> Plan</a></div>
     <div><i class="fas fa-radar"></i> Close By</div>
     <div><i class="fas fa-heart"></i> Match</div>
     <div><i class="fas fa-users"></i> Groups</div>
@@ -156,35 +175,42 @@
 
   <!-- Main Content -->
   <main>
-    <div class="section-title">Current Trips</div>
+  <div class="section-title">Current Trips</div>
 
-    <div class="ticket">
-      <div class="ticket-header">
-        <div>BOARDING PASS</div>
-        <div><i class="fas fa-plane-departure"></i> TravelPlanner</div>
+  {% for trip in trips %}
+  <div class="ticket">
+    <div class="ticket-header">
+      <div>BOARDING PASS</div>
+      <div><i class="fas fa-plane-departure"></i> TravelPlanner</div>
+    </div>
+
+    <div class="ticket-body">
+      <div class="ticket-info">
+        <h3>{{ trip.trip_name }}</h3>
+        <p><span class="bold-label">From:</span> {{ trip.origin }}</p>
+        <p><span class="bold-label">To:</span> {{ trip.destination }}</p>
+        <p><span class="bold-label">Departure:</span> {{ trip.departure }}</p>
+        <p><span class="bold-label">Return:</span> {{ trip.return_date }}</p>
+        <p><span class="bold-label">Travelers:</span> {{ trip.travelers }}</p>
       </div>
-
-      <div class="ticket-body">
-        <div class="ticket-info">
-          <h3>Tokyo, Japan</h3>
-          <p><span class="bold-label">From:</span> Los Angeles</p>
-          <p><span class="bold-label">To:</span> Tokyo, Japan</p>
-          <p><span class="bold-label">Departure:</span> 12/26/2025</p>
-          <p><span class="bold-label">Return:</span> 01/09/2026</p>
-          <p><span class="bold-label">Travelers:</span> Matthew, Alex</p>
-          <p><span class="bold-label">Flight:</span> AI 103</p>
-          <p><span class="bold-label">Boarding Time:</span> 07:50 AM</p>
-        </div>
-        <div class="ticket-image">
-          <img src="https://res.cloudinary.com/aenetworks/image/upload/c_fill,ar_2,w_3840,h_1920,g_auto/dpr_auto/f_auto/q_auto:eco/v1/gettyimages-1390815938?_a=BAVAZGDX0" alt="Tokyo City">
-        </div>
+      <div class="ticket-image">
+        <img src="{{ trip.image }}" alt="{{ trip.destination }}">
       </div>
+    </div>
 
-      <div class="ticket-footer">
+    <div class="ticket-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <form action="/delete_trip" method="POST" style="margin: 0;">
+        <input type="hidden" name="trip_id" value="{{ trip.id }}">
+        <button type="submit">Delete</button>
+      </form>
+      <div>
         Thank you for traveling with TravelPlanner ✈
       </div>
     </div>
-  </main>
+  </div>
+  {% endfor %}
+
+</main>
 
 </body>
 </html>

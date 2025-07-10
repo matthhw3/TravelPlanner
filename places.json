@@ -1,0 +1,38 @@
+[
+  {
+    "destination": "Tokyo",
+    "image": "https://images8.alphacoders.com/501/thumb-1920-501447.jpg"
+  },
+  {
+    "destination": "Osaka",
+    "image": "https://rare-gallery.com/uploads/posts/842702-Osaka-Japan-Houses-Rivers-Bridges-Evening-Marinas.jpg"
+  },
+  {
+    "destination": "New York",
+    "image": "https://cdn.wallpapersafari.com/43/5/wJucxa.jpg"
+  },
+  {
+    "destination": "London",
+    "image": "https://i.redd.it/5ej9fv3df5ba1.jpg"
+  },
+  {
+    "destination": "Shanghai",
+    "image": "https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2hhbmdoYWl8ZW58MHx8MHx8fDA%3D"
+  },
+  {
+    "destination": "Seoul",
+    "image": "https://wallpapercat.com/w/full/5/2/a/1426187-3840x2160-desktop-4k-seoul-skyline-wallpaper-photo.jpg"
+  },
+  {
+    "destination": "Paris",
+    "image": "https://external-preview.redd.it/iaiccNJ4sK2AORHWb_dGkhzUA36TiX1ViXik9USySyI.jpg?auto=webp&s=ccc232f5a7bf083b94fd82d430c5e93995548c8e"
+  },
+  {
+    "destination": "San Francisco",
+    "image": "https://wallpapers.com/images/hd/san-francisco-hd-2i11alxz9nrbiu19.jpg"
+  },
+  {
+    "destination": "Hong Kong",
+    "image": "https://plus.unsplash.com/premium_photo-1661887277173-f996f36b8fb2?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9uZyUyMGtvbmd8ZW58MHx8MHx8fDA%3D"
+  }
+]
