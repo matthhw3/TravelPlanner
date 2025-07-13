@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nearby Places</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffffff;
+      padding: 20px 30px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .user-badge {
+      background-color: #007BFF;
+      color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    main {
+      padding: 30px 40px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .recommendations-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .recommendation-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s;
+    }
+
+    .recommendation-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .place-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .card-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card-buttons button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .card-buttons button:hover {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <i class="fas fa-globe" style="font-size: 24px; color: #007BFF;"></i>
+      <a href="/dashboard" class="title">TravelPlanner</a>
+    </div>
+    <div class="user-badge" title="Your Account">{{ initials }}</div>
+  </header>
+
+  <main>
+    <h2>Top {{ query }} Recommendations Nearby</h2>
+    <div class="recommendations-container">
+      {% for place in places %}
+        <div class="recommendation-card">
+          <img class="place-img" src="{{ place.image if place.image else 'https://via.placeholder.com/400x200?text=No+Image' }}" alt="{{ place.name }}">
+          <h3>{{ place.name }}</h3>
+          <p>{{ place.location.formatted_address }}</p>
+
+          {% if place.location.locality %}
+            <p><strong>City:</strong> {{ place.location.locality }}</p>
+          {% endif %}
+
+          {% if place.categories %}
+            <p><strong>Category:</strong> {{ place.categories[0].name }}</p>
+          {% endif %}
+
+          <p>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ place.geocodes.main.latitude }},{{ place.geocodes.main.longitude }}" target="_blank">
+              📍 View on Google Maps
+            </a>
+          </p>
+
+          <div class="card-buttons">
+            <button onclick="alert('Saved!')">💾 Save to Trip</button>
+            <button onclick="alert('Liked!')">❤️ Like</button>
+            <button onclick="alert('Details coming soon')">ℹ️ Details</button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </main>
+
+</body>
+</html>

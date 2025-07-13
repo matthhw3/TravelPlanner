@@ -61,9 +61,10 @@
     /* Navigation Tabs */
     .nav-bar {
       display: flex;
-      justify-content: space-around;
+      justify-content: center;
+      gap: 100px;
       padding: 12px 0;
-      background-color: #f1f1f1;
+      background-color: #fffefe;
       border-bottom: 1px solid #ccc;
     }
 
@@ -167,7 +168,11 @@
   <!-- Navigation Tabs -->
   <div class="nav-bar">
     <div><a href= "/plan" class="plan"> Plan</a></div>
-    <div><i class="fas fa-radar"></i> Close By</div>
+    <div>
+      <a href="/recommend" style="text-decoration: none; color: inherit;">
+        <i class="fas fa-radar"></i> Close By
+      </a>
+    </div>
     <div><i class="fas fa-heart"></i> Match</div>
     <div><i class="fas fa-users"></i> Groups</div>
     <div><i class="fas fa-globe"></i> Offline</div>

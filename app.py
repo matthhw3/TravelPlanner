@@ -1,7 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import json
+import requests
+from foursquare import search_nearby_places
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+'''api_key = os.getenv("FOURSQUARE_API_KEY")
+print(f"Loaded FOURSQUARE_API_KEY: '{api_key}'")'''
 
 app = Flask(__name__)
 app.secret_key = "apple"
@@ -156,6 +164,40 @@ def delete_trip():
     flash("Trip deleted successfully")
     return redirect("/dashboard")
     
+'''@app.route("/nearby")
+def nearby():
+    # Example: fixed location (later, pass user location from frontend)
+    lat = request.args.get("lat", default="37.7749")  # Default to SF if not provided
+    lon = request.args.get("lon", default="-122.4194")
+    
+    # Foursquare API call
+    url = f"https://api.foursquare.com/v3/places/search?ll={lat},{lon}&radius=1000&limit=10"
+    headers = {
+        "Accept": "application/json",
+        "Authorization": api_key
+    }
+
+    response = requests.get(url, headers=headers)
+    print("Status Code:", response.status_code)
+    print("Response JSON:", response.text)
+    if response.status_code == 200:
+        places = response.json().get("results", [])
+    else:
+        places = []
+    
+    return render_template("nearby.html", places=places)'''
+
+@app.route("/recommend")
+def nearby():
+    lat = request.args.get("lat", default=35.6895)
+    lon = request.args.get("lon", default=139.6917)
+    query = request.args.get("query", default="ramen")
+
+    initials = session.get("initials")
+
+    places = search_nearby_places(lat, lon, query)
+    return render_template("recommend.html", places=places, query=query, initials=initials) 
+
 
 if __name__ == "__main__":
     with app.app_context():
