@@ -1,221 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>TravelPlanner Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
-    }
+{% extends "base.html" %}
 
-    /* Header */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #ffffff;
-      padding: 20px 30px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      text-decoration: none;
-    }
-
-    .plan {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: #ff7e5f; /* orange color from your theme */
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 1rem;
-    text-align: center;
-    text-decoration: none; /* remove underline */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-
-
-    .user-badge {
-      background-color: #007BFF;
-      color: white;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    /* Navigation Tabs */
-    .nav-bar {
-      display: flex;
-      justify-content: center;
-      gap: 100px;
-      padding: 12px 0;
-      background-color: #fffefe;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .nav-bar div {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    /* Main Content */
-    main {
-      padding: 30px 40px;
-    }
-
-    .section-title {
-      font-size: 20px;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
-
-    /* Ticket Design */
-    .ticket {
-      max-width: 800px;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      margin: auto;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .ticket-header {
-      background-color: #2c3e50;
-      color: white;
-      padding: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .ticket-body {
-      display: flex;
-      flex-wrap: wrap;
-      padding: 20px;
-      gap: 20px;
-    }
-
-    .ticket-info {
-      flex: 1 1 300px;
-    }
-
-    .ticket-info h3 {
-      margin: 0 0 10px;
-      font-size: 22px;
-      color: #333;
-    }
-
-    .ticket-info p {
-      margin: 4px 0;
-      font-size: 14px;
-      color: #555;
-    }
-
-    .ticket-image {
-      flex: 1 1 300px;
-    }
-
-    .ticket-image img {
-      width: 100%;
-      height: auto;
-      border-radius: 10px;
-    }
-
-    .ticket-footer {
-      background-color: #ecf0f1;
-      padding: 15px 20px;
-      font-size: 14px;
-      text-align: right;
-      color: #333;
-      border-top: 1px dashed #ccc;
-    }
-
-    .bold-label {
-      font-weight: bold;
-      color: #000;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Header -->
-  <header>
-    <a href="/dashboard" class="title">TravelPlanner</a>
-    <div class="user-badge">{{ initials }}</div>
-  </header>
-
-  <!-- Navigation Tabs -->
-  <div class="nav-bar">
-    <div><a href= "/plan" class="plan"> Plan</a></div>
-    <div>
-      <a href="/recommend" style="text-decoration: none; color: inherit;">
-        <i class="fas fa-radar"></i> Close By
-      </a>
-    </div>
-    <div><i class="fas fa-heart"></i> Match</div>
-    <div><i class="fas fa-users"></i> Groups</div>
-    <div><i class="fas fa-globe"></i> Offline</div>
-  </div>
-
-  <!-- Main Content -->
+{% block content %}
   <main>
-  <div class="section-title">Current Trips</div>
+    <div class="section-title">Current Trips</div>
 
-  {% for trip in trips %}
-  <div class="ticket">
-    <div class="ticket-header">
-      <div>BOARDING PASS</div>
-      <div><i class="fas fa-plane-departure"></i> TravelPlanner</div>
-    </div>
+    {% if trips %}
+      {% for trip in trips %}
+        <div class="ticket">
+          <div class="ticket-header">
+            <div>BOARDING PASS</div>
+            <div><i class="fas fa-plane-departure"></i> TravelPlanner</div>
+          </div>
 
-    <div class="ticket-body">
-      <div class="ticket-info">
-        <h3>{{ trip.trip_name }}</h3>
-        <p><span class="bold-label">From:</span> {{ trip.origin }}</p>
-        <p><span class="bold-label">To:</span> {{ trip.destination }}</p>
-        <p><span class="bold-label">Departure:</span> {{ trip.departure }}</p>
-        <p><span class="bold-label">Return:</span> {{ trip.return_date }}</p>
-        <p><span class="bold-label">Travelers:</span> {{ trip.travelers }}</p>
-      </div>
-      <div class="ticket-image">
-        <img src="{{ trip.image }}" alt="{{ trip.destination }}">
-      </div>
-    </div>
+          <a href="{{ url_for('trip_details', trip_id=trip.id) }}" class="ticket-link">
+            <div class="ticket-body">
+              <div class="ticket-info">
+                <h3>{{ trip.trip_name }}</h3>
+                <p><span class="bold-label">From:</span> {{ trip.origin }}</p>
+                <p><span class="bold-label">To:</span> {{ trip.destination }}</p>
+                <p><span class="bold-label">Departure:</span> {{ trip.departure }}</p>
+                <p><span class="bold-label">Return:</span> {{ trip.return_date }}</p>
+                <p><span class="bold-label">Travelers:</span> {{ trip.travelers }}</p>
+              </div>
+              <div class="ticket-image">
+                <img src="{{ trip.image }}" alt="{{ trip.destination }}">
+              </div>
+            </div>
+          </a>
 
-    <div class="ticket-footer" style="display: flex; justify-content: space-between; align-items: center;">
-      <form action="/delete_trip" method="POST" style="margin: 0;">
-        <input type="hidden" name="trip_id" value="{{ trip.id }}">
-        <button type="submit">Delete</button>
-      </form>
-      <div>
-        Thank you for traveling with TravelPlanner ✈
-      </div>
-    </div>
-  </div>
-  {% endfor %}
+          <div class="ticket-footer">
+            <form action="/delete_trip" method="POST" style="margin: 0;">
+              <input type="hidden" name="trip_id" value="{{ trip.id }}">
+              <button type="submit">Delete</button>
+            </form>
+            <div>Thank you for traveling with TravelPlanner ✈</div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>You have no trips yet. Start by creating one!</p>
+    {% endif %}
 
-</main>
-
-</body>
-</html>
+  </main>
+{% endblock %}

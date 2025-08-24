@@ -1,0 +1,57 @@
+{
+  "Food & Drink": {
+    "bakery": ["bakery"],
+    "street food": ["street food"],
+    "fine dining": ["fine dining", "michelin"],
+    "dessert": ["dessert shop", "ice cream", "chocolate"],
+    "night markets": ["night market"],
+    "cafe": ["cafe", "coffee shop"],
+    "farmers market": ["farmers market"],
+    "bars": ["bar"],
+    "clubs": ["night club", "club"]
+  },
+  "Nature & Outdoors": {
+    "hiking": ["hiking trail"],
+    "scenic overlook": ["scenic lookout", "viewpoint"],
+    "national park": ["national park"],
+    "lake": ["lake"],
+    "beach": ["beach"],
+    "viewpoints": ["viewpoint", "observation deck"],
+    "snorkeling": ["snorkeling", "diving"],
+    "swimming": ["beach"],
+    "biking": ["bike rental", "cycling path"]
+  },
+  "Culture & History": {
+    "museums": ["museum"],
+    "temples": ["temple"],
+    "historical landmarks": ["historic site", "landmark"],
+    "art": ["art gallery"]
+  },
+  "Entertainment": {
+    "karaoke": ["karaoke"],
+    "arcade": ["arcade"],
+    "theme park": ["theme park", "amusement park"],
+    "escape room": ["escape room"],
+    "sports": ["sports complex", "stadium"]
+  },
+  "Shopping": {
+    "book store": ["bookstore"],
+    "wet market": ["wet market", "local market"],
+    "shopping mall": ["shopping mall"],
+    "souvenirs": ["gift shop", "souvenir shop"],
+    "thrift stores": ["thrift store", "vintage shop"],
+    "fragrance": ["perfume store", "fragrance"],
+    "beauty": ["beauty salon", "cosmetics store"],
+    "skincare": ["skincare", "facial spa"]
+  },
+  "Wellness": {
+    "yoga": ["yoga"],
+    "meditation": ["meditation center"],
+    "spa/massage": ["spa", "massage"]
+  },
+  "Animals": {
+    "aquarium": ["aquarium"],
+    "zoo": ["zoo"],
+    "water park": ["water park"]
+  }
+}

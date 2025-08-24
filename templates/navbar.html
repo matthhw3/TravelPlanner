@@ -1,0 +1,34 @@
+<header>
+  <a href="/dashboard" class="title">TravelPlanner</a>
+
+  <div class="user-menu">
+    <div class="user-badge" onclick="toggleMenu()">
+      {{ initials }}
+    </div>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <a href="/logout">Logout</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById('dropdownMenu');
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+  }
+
+  document.addEventListener('click', function(event) {
+    const menu = document.getElementById('dropdownMenu');
+    const badge = document.querySelector('.user-badge');
+    if (!menu.contains(event.target) && !badge.contains(event.target)) {
+      menu.style.display = 'none';
+    }
+  });
+</script>
+
+<div class="nav-bar">
+  <div><a href="/dashboard" class="plan"></i>Home</a></div>
+  <div><a href="/plan" class="plan">Plan</a></div>
+  <div><a href="/nearby" class="plan"></i>Nearby</a></div>
+  <div><a href="/interests" class="plan"></i>Interests</a></div>
+</div>

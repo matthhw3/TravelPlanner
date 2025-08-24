@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+  <h2 style="text-align:center; font-size:28px; margin-bottom:20px;">Select Your Travel Interests</h2>
+
+  <form method="POST">
+    <div class="interest-grid">
+      {% for interest in interests_list %}
+        <label class="interest-tile">
+          <input type="checkbox" name="interests" value="{{ interest }}"
+                {% if interest in saved_interests %}checked{% endif %}>
+          <span>{{ interest }}</span>
+        </label>
+      {% endfor %}
+    </div>
+
+    <div style="text-align:center; margin-top: 20px;">
+      <button type="submit" class="save-button">Save Interests</button>
+    </div>
+  </form>
+</main>
+{% endblock %}
+

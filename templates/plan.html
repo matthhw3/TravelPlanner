@@ -1,148 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Plan a Trip - TravelPlanner</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
-    }
+{% extends "base.html" %}
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #ffffff;
-      padding: 20px 30px;
-      border-bottom: 1px solid #ddd;
-    }
+{% block content %}
+    <h2>Your Next Trip Starts Here</h2>
 
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      text-decoration: none;
-    }
+    <div class="plan-container">
+      <div class="destination-picker">
+        <h3>Where to?</h3>
 
-    .back-btn {
-      background-color: #333;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 5px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-    }
+        <div class="destination-display">
+          <button type="button" class="nav-arrow" onclick="prevDestination()">
+            <i class="fas fa-arrow-left"></i>
+          </button>
 
-    .back-btn:hover {
-      background-color: #555;
-    }
+          <div class="destination-info">
+            <img id="destination-image" src="" alt="Destination Image">
+            <p id="selected-destination">Tokyo</p>
+          </div>
 
-    main {
-      max-width: 600px;
-      margin: 40px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    label {
-      font-weight: bold;
-      color: #555;
-    }
-
-    input[type="text"],
-    input[type="date"] {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-    }
-
-    input[type="submit"] {
-      background-color: #ff7e5f;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 5px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    input[type="submit"]:hover {
-      background-color: #feb47b;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Header -->
-  <header>
-    <a href="/dashboard" class="title">TravelPlanner</a>
-    <a href="/dashboard" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
-  </header>
-
-  <!-- Main Content -->
-  <main>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="flash-messages">
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
+          <button type="button" class="nav-arrow" onclick="nextDestination()">
+            <i class="fas fa-arrow-right"></i>
+          </button>
         </div>
-    {% endif %}
-    {% endwith %}
-    <h2>Plan a New Trip</h2>
-    <form action="/create_trip" method="POST">
-      <div>
-        <label for="trip_name">Trip Name</label>
-        <input type="text" id="trip_name" name="trip_name" required>
-      </div>
-      <div>
-        <label for="origin">Departure</label>
-        <input type="text" id="origin" name="origin" required>
-      </div>
-      <div>
-        <label for="destination">Destination</label>
-        <input type="text" id="destination" name="destination" required>
-      </div>
-      <div>
-        <label for="departure">Departure Date</label>
-        <input type="date" id="departure" name="departure" required>
       </div>
 
-      <div>
-        <label for="return">Return Date</label>
-        <input type="date" id="return" name="return" required>
-      </div>
+      <div class="plan-form">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
 
-      <div>
-        <label for="travelers">Travelers</label>
-        <input type="text" id="travelers" name="travelers" placeholder="e.g. Matthew, Alex" required>
-      </div>
+        <form action="/create_trip" method="POST">
+          <div>
+            <label for="trip_name">Trip Name</label>
+            <input type="text" id="trip_name" name="trip_name" required>
+          </div>
 
-      <input type="submit" value="Create Trip">
-    </form>
+          <div>
+            <label for="origin">Departure</label>
+            <input type="text" id="origin" name="origin" required>
+          </div>
+
+          <div>
+            <label for="destination_input">Destination</label>
+            <input type="text" id="destination_input" name="destination" readonly required>
+          </div>
+
+          <div>
+            <label for="departure">Departure Date</label>
+            <input type="date" id="departure" name="departure" required>
+          </div>
+
+          <div>
+            <label for="return">Return Date</label>
+            <input type="date" id="return" name="return" required>
+          </div>
+
+          <div>
+            <label for="travelers">Add Travelers</label>
+            <input type="text" id="invited_users" name="invited_users" placeholder="e.g. Matthew, Ryan or None" required>
+          </div>
+
+          <input type="submit" value="Create Trip">
+        </form>
+      </div>
+    </div>
   </main>
 
-</body>
-</html>
+  <script>
+    const destinations = [
+      { name: "Tokyo, Japan", image: "https://images8.alphacoders.com/501/thumb-1920-501447.jpg" },
+      { name: "Osaka, Japan", image: "https://rare-gallery.com/uploads/posts/842702-Osaka-Japan-Houses-Rivers-Bridges-Evening-Marinas.jpg" },
+      { name: "New York, USA", image: "https://cdn.wallpapersafari.com/43/5/wJucxa.jpg" },
+      { name: "London, UK", image: "https://i.redd.it/5ej9fv3df5ba1.jpg" },
+      { name: "Shanghai, China", image: "https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2hhbmdoYWl8ZW58MHx8MHx8fDA%3D" },
+      { name: "Seoul, South Korea", image: "https://wallpapercat.com/w/full/5/2/a/1426187-3840x2160-desktop-4k-seoul-skyline-wallpaper-photo.jpg" },
+      { name: "Paris, France", image: "https://external-preview.redd.it/iaiccNJ4sK2AORHWb_dGkhzUA36TiX1ViXik9USySyI.jpg?auto=webp&s=ccc232f5a7bf083b94fd82d430c5e93995548c8e" },
+      { name: "San Francisco, USA", image: "https://wallpapers.com/images/hd/san-francisco-hd-2i11alxz9nrbiu19.jpg" },
+      { name: "Hong Kong, China", image: "https://plus.unsplash.com/premium_photo-1661887277173-f996f36b8fb2?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9uZyUyMGtvbmd8ZW58MHx8MHx8fDA%3D" }
+    ];
+
+    let currentIndex = 0;
+
+    function updatePreview() {
+      const current = destinations[currentIndex];
+      document.getElementById('selected-destination').innerText = current.name;
+      document.getElementById('destination-image').src = current.image;
+      document.getElementById('destination_input').value = current.name;
+    }
+
+    function nextDestination() {
+      currentIndex = (currentIndex + 1) % destinations.length;
+      updatePreview();
+    }
+
+    function prevDestination() {
+      currentIndex = (currentIndex - 1 + destinations.length) % destinations.length;
+      updatePreview();
+    }
+
+    window.onload = updatePreview;
+  </script>
+{% endblock %}

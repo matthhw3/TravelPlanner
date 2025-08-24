@@ -1,20 +1,244 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Nearby Places</title>
-</head>
-<body>
-  <h1>Nearby Places</h1>
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+  <h2>Search for Nearby Places</h2>
+  <form method="POST">
+    <input type="text" name="location" placeholder="Enter a location (e.g. Tokyo)" required>
+    <select name="mode" required>
+      <option value="walk">Walkable (1500 meters)</option>
+      <option value="drive">Driving (15000 meters)</option>
+    </select>
+    <button type="submit" name="action" value="randomize">Search</button>
+  </form>
 
   {% if places %}
-    <ul>
-      {% for place in places %}
-        <li>{{ place['name'] }} - {{ place['location']['formatted_address'] if 'formatted_address' in place['location'] else '' }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No places found.</p>
+  <div class="nearby-row">
+    <div id="map" class="nearby-map"></div>
+
+    <div class="nearby-cards">
+      <div id="card-grid"></div>
+      <button id="show-more" class="btn" style="margin:10px auto 0;">Show More</button>
+    </div>
+  </div>
+  {% elif places is not none %}
+    <p>No places found near {{ location }}</p>
   {% endif %}
-  
-</body>
-</html>
+</main>
+
+{% if places %}
+<script type="application/json" id="places-data">
+  {{ places | tojson | safe }}
+</script>
+
+<!-- Modal -->
+<div id="place-modal" class="modal-overlay nearby-modal" style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button id="modal-close-btn" class="modal-close" aria-label="Close">×</button>
+    <h3 id="m-title" class="modal-title"></h3>
+    <div id="m-sub" class="muted"></div>
+
+    <div class="modal-flex" style="margin-top:10px;">
+      <div class="left-col">
+        <img id="m-hero" class="hero-img" alt="">
+        <div id="m-thumbs" class="thumbs"></div>
+      </div>
+      <div class="right-col">
+        <div id="m-summary" style="white-space:pre-wrap; line-height:1.35;"></div>
+        <div id="m-rating" class="rating"></div>
+        <div id="m-mini-map" class="nearby-mini-map"></div>
+
+        <!-- Add to Trip -->
+        <form id="add-form" method="POST" action="/nearby/add"
+              style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input type="hidden" name="place_id" id="m-place-id">
+          <input type="hidden" name="ajax" value="1">
+          <label class="muted">Trip:</label>
+          <select name="trip_id" class="input" required>
+            <option value="" disabled selected>Select a trip…</option>
+            {% for t in trips %}
+              <option value="{{ t.id }}">{{ t.trip_name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn" id="add-btn">Add to Trip</button>
+          <span id="add-msg" class="muted" style="margin-left:6px;"></span>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const nearbyPlaces = JSON.parse(document.getElementById("places-data").textContent);
+  const SEARCH_CENTER = { lat: parseFloat("{{ lat }}"), lng: parseFloat("{{ lon }}") };
+
+  // Map (unchanged)
+  function initMap() {
+    const map = new google.maps.Map(document.getElementById("map"), { zoom: 14, center: SEARCH_CENTER });
+    new google.maps.Marker({
+      position: SEARCH_CENTER, map, title: "Search Location",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+    });
+    for (let place of nearbyPlaces) {
+      const marker = new google.maps.Marker({ position: place.geometry.location, map, title: place.name });
+      const infoWindow = new google.maps.InfoWindow({ content: `<strong>${place.name}</strong><br>${place.vicinity || ""}` });
+      marker.addListener("click", () => infoWindow.open(map, marker));
+    }
+  }
+
+  // Cards grid
+  document.addEventListener("DOMContentLoaded", () => {
+    let cardIndex = 0;
+    const cardsPerPage = 4;
+    const grid = document.getElementById("card-grid");
+
+    function createCard(place) {
+      const rating = place.rating ? parseFloat(place.rating).toFixed(1) : "N/A";
+      const ref = place.photos?.[0]?.photo_reference;
+      const img = ref
+        ? `<img src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${ref}&key={{ google_api_key }}" alt="">`
+        : "";
+      return `
+        <div class="place-card" data-place-id="${place.place_id}">
+          ${img}
+          <h4 class="place-title">${place.name}</h4>
+          <div class="place-rating">★ ${rating}</div>
+        </div>
+      `;
+    }
+
+    function loadMoreCards() {
+      const next = nearbyPlaces.slice(cardIndex, cardIndex + cardsPerPage);
+      next.forEach(p => grid.insertAdjacentHTML("beforeend", createCard(p)));
+      cardIndex += cardsPerPage;
+      if (cardIndex >= nearbyPlaces.length) document.getElementById("show-more").style.display = "none";
+    }
+
+    if (nearbyPlaces.length > 0) {
+      loadMoreCards();
+      document.getElementById("show-more").addEventListener("click", loadMoreCards);
+    }
+
+    grid.addEventListener("click", (e)=>{
+      const card = e.target.closest(".place-card");
+      if(!card) return;
+      openModal(card.dataset.placeId);
+    });
+  });
+
+  // Modal helpers
+  const overlay = document.getElementById("place-modal");
+  overlay.querySelector(".modal-close").addEventListener("click", ()=> overlay.style.display = "none");
+  overlay.addEventListener("click", (e)=>{ if(e.target===overlay) overlay.style.display = "none"; });
+
+  function priceSymbols(level){
+    if(level == null) return "";
+    return level === 0 ? "(Free)" : `(${Array(level).fill("$").join("")})`;
+  }
+  function starText(r){ return r ? `⭐ ${Number(r).toFixed(1)} / 5` : "No rating"; }
+
+  function openModal(placeId){
+    const svc = new google.maps.places.PlacesService(document.createElement("div"));
+    const fields = ["name","price_level","editorial_summary","rating","user_ratings_total","photos","geometry"];
+    svc.getDetails({ placeId, fields }, (d, status) => {
+      if(status !== google.maps.places.PlacesServiceStatus.OK || !d){ return; }
+
+      document.getElementById("m-title").textContent = d.name || "Place";
+      document.getElementById("m-sub").textContent = priceSymbols(d.price_level);
+
+      const summary = d.editorial_summary?.overview || "No description available.";
+      document.getElementById("m-summary").textContent = summary;
+      document.getElementById("m-rating").textContent = starText(d.rating) + (d.user_ratings_total ? ` (${d.user_ratings_total})` : "");
+
+      const hero = document.getElementById("m-hero");
+      const thumbs = document.getElementById("m-thumbs");
+      thumbs.innerHTML = "";
+      if(d.photos?.length){
+        hero.src = d.photos[0].getUrl({maxWidth: 900});
+        d.photos.slice(0,5).forEach(p=>{
+          const im = document.createElement("img");
+          im.src = p.getUrl({maxWidth: 200});
+          im.alt = "";
+          im.addEventListener("click", ()=> hero.src = p.getUrl({maxWidth: 900}));
+          thumbs.appendChild(im);
+        });
+      }else{
+        hero.removeAttribute("src"); hero.alt = "No image";
+      }
+
+      const mm = new google.maps.Map(document.getElementById("m-mini-map"),
+        { zoom: 14, center: SEARCH_CENTER, disableDefaultUI: true });
+      new google.maps.Marker({
+        position: SEARCH_CENTER, map: mm, title: "Search Location",
+        icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      });
+      if(d.geometry?.location){
+        const pos = d.geometry.location;
+        new google.maps.Marker({ position: pos, map: mm, title: d.name });
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend(SEARCH_CENTER); bounds.extend(pos);
+        mm.fitBounds(bounds);
+      }
+
+      // reset button/select each open
+      const addBtn = document.getElementById("add-btn");
+      const tripSelect = document.querySelector('#add-form select[name="trip_id"]');
+      document.getElementById("m-place-id").value = placeId;
+      document.getElementById("add-msg").textContent = "";
+      addBtn.disabled = false;
+      addBtn.classList.remove("btn--added");
+      addBtn.innerHTML = "Add to Trip";
+      if (tripSelect) tripSelect.disabled = false;
+
+      overlay.style.display = "flex";
+    });
+  }
+
+  // AJAX add (no navigation)
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("add-form");
+    if (!form) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("add-btn");
+      const msg = document.getElementById("add-msg");
+      const select = form.querySelector('select[name="trip_id"]');
+      if (!select?.value) { msg.textContent = "Select a trip."; return; }
+
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = "Adding…";
+
+      const fd = new FormData(form); fd.set("ajax","1");
+      try {
+        const resp = await fetch(form.action, {
+          method: "POST",
+          body: fd,
+          headers: { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json" },
+          credentials: "same-origin"
+        });
+
+        const ct = resp.headers.get("content-type") || "";
+        const data = ct.includes("application/json") ? await resp.json() : null;
+
+        if (data && data.ok === true) {
+          btn.classList.add("btn--added");
+          btn.innerHTML = 'Added <span aria-hidden="true">✓</span>';
+          btn.disabled = true;
+          select.disabled = true;
+          msg.textContent = "";
+        } else {
+          btn.textContent = original; btn.disabled = false;
+          msg.textContent = (data && (data.error || data.message)) || "Could not add.";
+        }
+      } catch (err) {
+        btn.textContent = original; btn.disabled = false;
+        msg.textContent = "Network error. Try again.";
+      }
+    });
+  });
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap&libraries=places"></script>
+{% endif %}
+{% endblock %}

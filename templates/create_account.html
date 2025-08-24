@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Account</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styling.css') }}">
+</head>
+<body>
+
+  <h1>Travel Planner</h1>
+
+  <div class="create-box">
+    <h2>Create Account</h2>
+    <form method="POST" action="/create_account">
+      <input type="text" name="first_name" placeholder="First Name" required>
+      <input type="text" name="last_name" placeholder="Last Name" required>
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="submit" value="Create Account">
+    </form>
+    <a class="back-to-login" href="/">Back to Login</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="error">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- keep styles inline while iterating; move to styling.css later -->
+ <style>
+  .trip-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px}
+  .trip-title{font-size:24px;font-weight:700}
+  .trip-sub{color:#6b7280;font-size:13px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px}
+  .card-tight{padding:12px}
+  .row-between{display:flex;align-items:center;justify-content:space-between}
+  .mb-8{margin-bottom:8px}
+  .h3{font-size:16px;font-weight:700}
+  .h4{font-size:14px;font-weight:700}
+  .muted{color:#6b7280}
+  .s{font-size:12px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid #e5e7eb;background:#111827;color:#fff;cursor:pointer}
+  .input{padding:8px 10px;border-radius:10px;border:1px solid #e5e7eb;min-width:180px}
+  .add-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .icon-arrow{border:none;background:transparent;font-size:20px;line-height:1;cursor:pointer;color:#111827}
+
+  /* layout: big itinerary left, three widgets stacked on right */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:16px}
+  .rail{display:flex;flex-direction:column;gap:12px}
+
+  /* possible activities chips */
+  .staged-row{display:flex;gap:8px;padding:4px}
+  .carousel{display:flex;align-items:center;gap:8px}
+  .carousel-track{overflow:hidden;flex:1}
+.act-chip {
+  display: flex;
+  flex-direction: column; /* stack image over text */
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 140px; /* adjust as needed */
+  max-width: 220px;
+  padding: 0; /* remove chip padding so image touches edges */
+  cursor: pointer;
+  transition: box-shadow 0.12s, transform 0.12s;
+}
+
+.act-chip:hover {
+  box-shadow: 0 10px 22px rgba(0,0,0,.12);
+  transform: translateY(-1px);
+}
+
+/* Image area like resv-img */
+.chip-img {
+  width: 100%;
+  aspect-ratio: 1/1; /* square image */
+  border-radius: 0; /* no rounding here, handled by container */
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Name styling like resv-name */
+.chip-name {
+  padding: 6px 8px;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+  /* itinerary */
+  .cal-pager{display:flex;align-items:center;gap:10px}
+  .calendar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .day-col{border:1px dashed #d1d5db;border-radius:10px;min-height:300px;background:#fff}
+  .day-col-header{padding:8px 10px;font-weight:600;border-bottom:1px solid #f3f4f6;background:#f9fafb;border-radius:10px 10px 0 0}
+  .day-drop{padding:10px;min-height:190px;display:flex;flex-direction:column;gap:8px}
+  .act-card{position:relative;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+  .act-card .act-del{position:absolute;top:6px;right:6px;border:none;background:transparent;font-size:16px;color:#6b7280;cursor:pointer}
+  .act-title{font-weight:600}
+
+  /* reservations widget: square cards */
+  .resv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .resv-card{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;cursor:pointer}
+  .resv-img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#f3f4f6}
+  .resv-name{padding:6px 8px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* charts */
+  .donut-wrap{position:relative;width:100%;max-width:260px;margin:auto}
+  .donut-wrap canvas{display:block;width:100%}
+  .donut-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:650;font-size:25px;color:#111827;pointer-events:none}
+
+  /* modal */
+  .modal-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);z-index:1000}
+  .modal{width:min(820px,92vw);background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.2);padding:16px;position:relative}
+  .modal-close{position:absolute;top:10px;right:12px;border:none;background:transparent;font-size:22px;cursor:pointer;color:#111827}
+  .modal-flex{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .hero-img{width:100%;height:370px;object-fit:cover;border-radius:5px;background:#f3f4f6}
+  .thumbs{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .thumbs img{width:60px;height:60px;object-fit:cover;border-radius:5px;cursor:pointer}
+  .reviews{display:flex;flex-direction:column;gap:10px}
+  .review{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+  .review-text{margin:4px 0;color:#111827}
+  .review-author{color:#6b7280;font-size:12px}
+  .review-stars{color:#fde68a; font-weight:700}
+  .stars{display:flex;gap:4px}
+  .stars .star{border:none;background:transparent;cursor:pointer;font-size:24px;line-height:1;color:#d1d5db;padding:0}
+  .stars .star.on{color:#f59e0b}
+</style>
+
+<main id="trip-root"
+      data-trip-id="{{ trip.id }}"
+      data-start="{{ trip.departure }}"
+      data-end="{{ trip.return_date }}">
+
+  <!-- Header -->
+  <header class="trip-header">
+    <div class="trip-title">{{ trip.trip_name }}</div>
+    <div class="trip-sub">{{ trip.origin }} → {{ trip.destination }} · {{ trip.departure }} – {{ trip.return_date }}</div>
+  </header>
+
+  <!-- Possible Activities -->
+  <section class="card card-tight">
+    <div class="row-between mb-8">
+      <h3 class="itn">  Possible Activities</h3>
+      <form id="add-manual-form"
+            action="{{ url_for('trips.add_manual_activity', trip_id=trip.id) }}"
+            method="POST" class="add-form">
+        <input class="input" type="text" name="title" placeholder="Activity title" required>
+        <input class="input" type="text" name="location" placeholder="Location (address/place)" required>
+        <button class="btn" type="submit" id="add-manual-btn">Add</button>
+        <span id="add-manual-msg" class="muted"></span>
+      </form>
+    </div>
+    <div class="carousel">
+      <button id="leftBtn" class="icon-arrow" aria-label="Previous">‹</button>
+      <div id="stagedScroller" class="carousel-track"><div id="stagedList" class="staged-row"></div></div>
+      <button id="rightBtn" class="icon-arrow" aria-label="Next">›</button>
+    </div>
+  </section>
+
+  <!-- Main layout: big itinerary + right rail -->
+  <section class="layout">
+    <!-- Itinerary (left) -->
+    <div class="card card-tight">
+      <div class="row-between mb-8">
+        <h3 class="itn">  Itinerary</h3>
+        <div class="cal-pager">
+          <button id="calPrev" class="icon-arrow" aria-label="Prev">‹</button>
+          <span id="calWindow" class="muted s"></span>
+          <button id="calNext" class="icon-arrow" aria-label="Next">›</button>
+        </div>
+      </div>
+      <div id="calendar" class="calendar-grid"></div>
+    </div>
+
+    <!-- Right rail (stack): Reservations → Diversity → Match -->
+    <aside class="rail">
+      <div class="card card-tight">
+        <div class="row-between mb-8"><div class="h4">Reservations Needed</div></div>
+        <div id="resvGrid" class="resv-grid"></div>
+      </div>
+
+      <div class="card card-tight">
+        <div class="row-between mb-8"><div class="h4">Diversity of Plan</div></div>
+        <canvas id="diversityChart" height="160"></canvas>
+      </div>
+
+      <div class="card card-tight">
+        <div class="row-between mb-8"><div class="h4">Group Match</div></div>
+        <div class="donut-wrap">
+          <canvas id="matchChart" height="160"></canvas>
+          <div id="matchCenter" class="donut-center">–</div>
+        </div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<!-- Details modal -->
+<div id="act-modal" class="modal-overlay trip-modal" style="display:none;">
+  <div class="modal">
+    <button class="modal-close" aria-label="Close">×</button>
+
+    <h2 id="am-title" class="modal-title"></h2>
+    <div class="muted" id="am-rating"></div>
+
+    <!-- two-column layout -->
+    <div class="modal-flex" style="margin-top:8px;">
+      <!-- left: media -->
+      <div class="left-col">
+        <img id="am-hero" class="hero-img" alt="">
+        <div id="am-thumbs" class="thumbs"></div>
+      </div>
+
+      <!-- right: summary + reviews + vote -->
+      <div class="right-col">
+        <p id="am-summary" class="mb-8"></p>
+
+        <div class="reviews-pane mb-8">
+          <div id="am-reviews" class="reviews"></div>
+        </div>
+
+        <div class="vote-row">
+          <span class="muted">Interest Level:</span>
+          <div id="am-stars" class="stars" role="radiogroup" aria-label="Rate 1 to 5 stars"></div>
+          <span id="am-vote-msg" class="muted s"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+/* ===== basics ===== */
+const ROOT = document.getElementById("trip-root");
+const TRIP_ID = Number(ROOT.dataset.tripId);
+const $  = (s,c=document)=>c.querySelector(s);
+const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
+const photoUrl = ref => ref ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key={{ google_api_key }}` : null;
+
+/* ===== chips ===== */
+let stagedSortable;
+function renderStaged(staged){
+  const row = $("#stagedList");
+  row.innerHTML = "";
+
+  (staged || []).forEach(a => {
+    const url = photoUrl(a.image_ref);
+
+    const chip = document.createElement("div");
+    chip.className = "act-chip";
+    chip.dataset.id = a.id;
+
+    chip.innerHTML = `
+      <span class="chip-img">
+        ${url ? `<img src="${url}" alt="">` : `<div class="chip-placeholder">?</div>`}
+      </span>
+      <span class="chip-name" title="${a.name}">${a.name}</span>
+      <button class="chip-del" title="Remove" aria-label="Remove">×</button>
+    `;
+
+    row.appendChild(chip);
+  });
+  if (stagedSortable) stagedSortable.destroy();
+  stagedSortable = new Sortable(row, {
+    group:{name:"acts",pull:"clone",put:true}, sort:false, animation:150,
+    onAdd:(evt)=>{ // dropped back -> unschedule
+      const id = evt.item.dataset.id;
+      fetch(`/trips/${TRIP_ID}/unschedule`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({activity_id:id})}).then(()=> refreshAll());
+    }
+  });
+  row.onclick = (e)=>{
+    const del = e.target.closest(".chip-del");
+    if (del){
+      e.stopPropagation();
+      const chip = del.closest(".act-chip"); if(!chip) return;
+      const id = chip.dataset.id;
+      fetch(`/trips/${TRIP_ID}/activities/${id}/delete`, { method:"POST" }).then(()=> refreshAll());
+      return;
+    }
+    const chip = e.target.closest(".act-chip"); if(!chip) return;
+    openActivityModal(Number(chip.dataset.id));
+  };
+}
+$("#leftBtn").onclick  = ()=> $("#stagedScroller").scrollBy({left:-320,behavior:"smooth"});
+$("#rightBtn").onclick = ()=> $("#stagedScroller").scrollBy({left: 320,behavior:"smooth"});
+
+/* ===== reservations rail widget ===== */
+function renderReservations(list){
+  const grid = $("#resvGrid"); grid.innerHTML = "";
+  (list||[]).forEach(a=>{
+    const url = photoUrl(a.image_ref);
+    const card = document.createElement("div");
+    card.className = "resv-card"; card.dataset.id = a.id;
+    card.innerHTML = `
+      <img class="resv-img" src="${url || ''}" alt="">
+      <div class="resv-name" title="${a.name}">${a.name}</div>`;
+    card.onclick = ()=> openActivityModal(Number(a.id));
+    grid.appendChild(card);
+  });
+}
+
+/* ===== itinerary (4-day pager) ===== */
+let DAYS = []; const PAGE = 4; let pageIndex = 0;
+function renderCalendarWindow(){
+  const start = pageIndex*PAGE, end = Math.min(start+PAGE, DAYS.length);
+  const slice = DAYS.slice(start,end), cal = $("#calendar"); cal.innerHTML = "";
+  slice.forEach(day=>{
+    const col = document.createElement("div");
+    col.className = "day-col";
+    col.innerHTML = `<div class="day-col-header">${new Date(day).toLocaleDateString()}</div>
+                     <div class="day-drop" id="day-${day}"></div>`;
+    cal.appendChild(col);
+  });
+  $("#calWindow").textContent = slice.length ? `${new Date(slice[0]).toLocaleDateString()} — ${new Date(slice[slice.length-1]).toLocaleDateString()}` : "";
+  wireDays();
+}
+$("#calPrev").onclick = ()=>{ if(pageIndex>0){ pageIndex--; renderCalendarWindow(); refillScheduledWindow(); } };
+$("#calNext").onclick = ()=>{ if((pageIndex+1)*PAGE < DAYS.length){ pageIndex++; renderCalendarWindow(); refillScheduledWindow(); } };
+
+// Open the same modal when clicking an itinerary card (ignore its X)
+document.getElementById('calendar').addEventListener('click', (e) => {
+  if (e.target.closest('.act-del')) return;      // skip the remove button
+  const card = e.target.closest('.act-card');
+  if (!card) return;
+  openActivityModal(Number(card.dataset.id));
+});
+
+
+function wireDays(){
+  $$(".day-drop").forEach(el=>{
+    // highlight on native drag events (works with Sortable)
+    el.addEventListener('dragenter', ()=> el.classList.add('drop-hover'));
+    el.addEventListener('dragleave', ()=> el.classList.remove('drop-hover'));
+    el.addEventListener('drop',      ()=> el.classList.remove('drop-hover'));
+
+    new Sortable(el, {
+      group:{name:"acts", pull:true, put:true},
+      animation:150,
+      ghostClass: 'drag-ghost',      // <-- for the cloned element
+      chosenClass: 'drag-chosen',    // <-- for the picked-up element
+      dragClass: 'dragging',         // <-- applied to the dragged item
+      onAdd: async (evt)=>{
+        const id  = evt.item.dataset.id;
+        const day = el.id.replace("day-",""); // ISO date
+
+        try{
+          const r = await fetch(`/trips/${TRIP_ID}/schedule`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ activity_id: Number(id), date: day })
+          });
+          if(!r.ok) throw new Error();
+
+          document.querySelector(`.act-chip[data-id="${id}"]`)?.remove();
+          await refreshAll();
+        }catch{
+          evt.from.appendChild(evt.item);
+          alert("Could not schedule. Try again.");
+        }finally{
+          el.classList.remove('drop-hover');
+        }
+      }
+    });
+  });
+}
+
+
+function addScheduledCard(holder,a){
+  const el = document.createElement("div");
+  el.className = "act-card";
+  el.dataset.id = a.id;
+  el.innerHTML = `
+    <button class="act-del" title="Remove">×</button>
+    <div class="act-title">${a.name}</div>
+  `;
+  holder.appendChild(el);
+
+  // Unschedule (return to Possible)
+  el.querySelector(".act-del").onclick = async ()=> {
+    try{
+      const r = await fetch(`/trips/${TRIP_ID}/unschedule`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ activity_id: Number(a.id) })
+      });
+      if(!r.ok) throw new Error();
+      await refreshAll();          // brings the chip back to Possible
+    }catch{
+      alert("Could not remove.");
+    }
+  };
+}
+
+
+/* ===== charts: diversity pie + match donut ===== */
+let diversityChart, matchChart;
+function renderDiversityChart(labels, values){
+  const ctx = $("#diversityChart");
+  if(diversityChart) diversityChart.destroy();
+  if(!labels || !labels.length){
+    diversityChart = new Chart(ctx, {type:"pie", data:{labels:["No items"], datasets:[{data:[1]}]}, options:{plugins:{legend:{display:false}}}});
+    return;
+  }
+  diversityChart = new Chart(ctx, { type:"pie", data:{ labels, datasets:[{ data: values }] }, options:{ plugins:{ legend:{ position:"bottom" } } } });
+}
+function renderMatchChart(percent){
+  const ctx = $("#matchChart");
+  if(matchChart) matchChart.destroy();
+  const p = (percent==null) ? 0 : Math.max(0, Math.min(100, percent));
+  $("#matchCenter").textContent = (percent==null ? "–" : Math.round(p) + "%");
+  matchChart = new Chart(ctx, { type:"doughnut", data:{ labels:["Match","Remaining"], datasets:[{ data:[p, 100-p] }] }, options:{ cutout:"70%", plugins:{ legend:{ display:false } } } });
+}
+
+/* ===== state refresh ===== */
+async function refreshAll(){
+  // staged
+  try{ renderStaged(await (await fetch(`/api/trips/${TRIP_ID}/staged`)).json()); }catch{ renderStaged([]); }
+
+  // state
+  let s={ days:[], scheduled_by_day:{}, diversity:{labels:[],values:[]}, group_match_percent:null };
+  try{ s = await (await fetch(`/api/trips/${TRIP_ID}/state`)).json(); }catch{}
+  DAYS = s.days || []; renderCalendarWindow();
+  const start = pageIndex*PAGE, end = Math.min(start+PAGE, DAYS.length);
+  DAYS.slice(start,end).forEach(day=>{
+    const holder = document.getElementById(`day-${day}`); if(!holder) return;
+    (s.scheduled_by_day?.[day] || []).forEach(a=> addScheduledCard(holder, a));
+  });
+
+  renderDiversityChart((s.diversity||{}).labels, (s.diversity||{}).values);
+  renderMatchChart(s.group_match_percent);
+
+  // reservations
+  try{ renderReservations(await (await fetch(`/api/trips/${TRIP_ID}/reservations`)).json()); }catch{ renderReservations([]); }
+}
+function refillScheduledWindow(){
+  fetch(`/api/trips/${TRIP_ID}/state`).then(r=>r.json()).then(s=>{
+    const start = pageIndex*PAGE, end = Math.min(start+PAGE, s.days.length);
+    s.days.slice(start,end).forEach(day=>{
+      const holder = document.getElementById(`day-${day}`); if(!holder) return;
+      holder.innerHTML = "";
+      (s.scheduled_by_day?.[day] || []).forEach(a=> addScheduledCard(holder, a));
+    });
+    renderDiversityChart((s.diversity||{}).labels, (s.diversity||{}).values);
+    renderMatchChart(s.group_match_percent);
+  }).catch(()=>{ /* ignore */ });
+}
+
+/* ===== manual add (AJAX) ===== */
+$("#add-manual-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn=$("#add-manual-btn"), msg=$("#add-manual-msg");
+  btn.disabled=true; msg.textContent="Adding…";
+  try{
+    const resp = await fetch(e.target.action,{ method:"POST", body:new FormData(e.target), headers:{ "X-Requested-With":"XMLHttpRequest"}});
+    const data = await resp.json();
+    if(data.ok){ e.target.reset(); msg.textContent="Added ✓"; refreshAll(); setTimeout(()=>msg.textContent="",900); }
+    else { msg.textContent = data.error || "Could not add"; }
+  }catch{ msg.textContent="Network error"; } finally{ btn.disabled=false; }
+});
+
+/* ===== modal (details + vote) ===== */
+const MOD = {};
+const starMarkup = cur => Array.from({length:5},(_,i)=>`<button class="star${i<cur?' on':''}" data-stars="${i+1}">★</button>`).join("");
+const truncate = (t,n)=> (t||"").length>n ? (t.slice(0,n).trim()+"…") : (t||"");
+
+function bindModal(){
+  MOD.wrap=$("#act-modal"); MOD.close=$("#act-modal .modal-close");
+  MOD.title=$("#am-title"); MOD.rating=$("#am-rating");
+  MOD.hero=$("#am-hero"); MOD.thumbs=$("#am-thumbs");
+  MOD.summary=$("#am-summary"); MOD.reviews=$("#am-reviews");
+  MOD.stars=$("#am-stars"); MOD.voteMsg=$("#am-vote-msg");
+  MOD.close.onclick = ()=> MOD.wrap.style.display="none";
+  MOD.wrap.onclick  = (e)=>{ if(e.target===MOD.wrap) MOD.wrap.style.display="none"; };
+}
+
+async function openActivityModal(activityId){
+  if(!MOD.wrap) bindModal();
+  // reset
+  MOD.title.textContent="Loading…"; MOD.rating.textContent=""; MOD.summary.textContent="";
+  MOD.thumbs.innerHTML=""; MOD.reviews.innerHTML=""; MOD.stars.innerHTML=""; MOD.voteMsg.textContent=""; MOD.hero.removeAttribute("src");
+
+  try{
+    const resp = await fetch(`/api/activities/${activityId}/details`);
+    if(!resp.ok){ throw new Error("HTTP "+resp.status); }
+    const d = await resp.json();
+
+    MOD.title.textContent = d.name || "Activity";
+    MOD.rating.textContent = d.rating ? `⭐ ${d.rating} (${d.ratings_total||0})` : "No rating";
+    MOD.summary.textContent = d.summary || "No description available.";
+
+    if (d.photo_refs?.length){
+      MOD.hero.src = photoUrl(d.photo_refs[0]);
+      d.photo_refs.forEach(ref=>{
+        const im=document.createElement("img");
+        im.src = photoUrl(ref);
+        im.onclick = ()=> MOD.hero.src = photoUrl(ref);
+        MOD.thumbs.appendChild(im);
+      });
+    }
+
+    MOD.reviews.innerHTML = (d.reviews?.length)
+      ? d.reviews.map(rv=>`
+          <div class="review">
+            <div class="review-stars">★ ${rv.stars||'–'}</div>
+            <div class="review-text">“${truncate(rv.text, 100)}”</div>
+            <div class="review-author">— ${rv.author}</div>
+          </div>`).join("")
+      : `<div class="muted s">No reviews</div>`;
+
+    MOD.stars.innerHTML = starMarkup(d.my_stars||0);
+    MOD.stars.onclick = async (e)=>{
+      const btn = e.target.closest(".star"); if(!btn) return;
+      const stars = Number(btn.dataset.stars);
+      MOD.stars.innerHTML = starMarkup(stars); // optimistic
+      try{
+        const out = await (await fetch(`/api/activities/${activityId}/vote`, {
+          method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ stars })
+        })).json();
+        if(out.ok){ MOD.voteMsg.textContent="Saved ✓"; setTimeout(()=>MOD.voteMsg.textContent="",900); refreshAll(); }
+        else { MOD.voteMsg.textContent = out.error || "Could not save"; }
+      }catch{ MOD.voteMsg.textContent = "Network error"; }
+    };
+
+  }catch(err){
+    MOD.title.textContent = "Could not load details";
+    MOD.summary.textContent = "Please try again.";
+  }
+
+  MOD.wrap.style.display = "flex";
+}
+
+/* ===== go ===== */
+refreshAll();
+</script>
+
+{% endblock %}
